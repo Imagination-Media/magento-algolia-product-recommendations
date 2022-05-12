@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="algolia.product.recommendations">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">ImaginationMedia_AlgoliaProductRecommendations::hyva/recommendations.phtml</argument>
+            </action>
+            <arguments>
+                <argument name="title" xsi:type="string">Products Customers Also Purchased</argument>
+            </arguments>
+
+            <block name="algolia.product.recommendations.js"
+                   as="js"
+                   template="ImaginationMedia_AlgoliaProductRecommendations::hyva/js-init.phtml">
+                <arguments>
+                    <argument name="relatedProductsViewModel" xsi:type="object">
+                        ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
+                    </argument>
+                    <argument name="recommendationModel" xsi:type="string">related-products</argument>
+                    <argument name="productLimit" xsi:type="number">10</argument>
+                </arguments>
+            </block>
+            <block name="algolia.product.recommendations.hit"
+                   as="hit"
+                   template="ImaginationMedia_AlgoliaProductRecommendations::hyva/hit.phtml" />
+        </referenceBlock>
+    </body>
+</page>

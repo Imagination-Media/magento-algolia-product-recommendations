@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block name="algolia.product.recommendations"
+                   template="ImaginationMedia_AlgoliaProductRecommendations::related-products.phtml">
+                <arguments>
+                    <argument name="relatedProductsViewModel" xsi:type="object">
+                        ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

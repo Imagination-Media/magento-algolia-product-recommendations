@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ */
+
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ProductRecommendationsViewModel $relatedProducts */
+$relatedProducts = $block->getData('relatedProductsViewModel');
+
+if (!$relatedProducts->isEnabled()) {
+    return;
+}
+?>
+
+<script src="https://cdn.jsdelivr.net/npm/@algolia/recommend"></script>
+<script>
+    const algoliarecommend = window['@algolia/recommend'];
+    const client = algoliarecommend(
+        '<?= $escaper->escapeJs($relatedProducts->getApplicationId()) ?>',
+        '<?= $escaper->escapeJs($relatedProducts->getSearchOnlyAPIKey()) ?>'
+    );
+
+    client.getRecommendations([
+        {
+            indexName: '<?= $escaper->escapeJs($relatedProducts->getIndexName()) ?>',
+            objectID: '<?= $escaper->escapeJs($relatedProducts->getProductId()) ?>',
+            model: '<?= $escaper->escapeJs(ProductRecommendationsViewModel::MODEL) ?>',
+            maxRecommendations: 10
+        },
+    ])
+    .then(({ results }) => {
+        console.log(results);
+    })
+    .catch(err => {
+        console.log(err);
+    });
+</script>

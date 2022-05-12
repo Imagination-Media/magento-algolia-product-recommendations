@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @see https://www.algolia.com/doc/api-client/methods/recommend/?client=javascript
+ * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/?client=javascript
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ *
+ */
+
+declare(strict_types=1);
+
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ProductRecommendationsViewModel $relatedProducts */
+$relatedProducts = $block->getData('relatedProductsViewModel');
+
+if (!$relatedProducts->isEnabled()) {
+    return;
+}
+?>
+
+<?= $block->getChildHtml('js') ?>
+
+<div x-data="algoliaRecommendationsFor<?= $escaper->escapeHtmlAttr($relatedProducts->getProductId()) ?>()"
+     x-cloak
+     x-init="init"
+     x-show="nbHits"
+>
+    <h4 class="text-2xl font-semibold mb-5"><?= $escaper->escapeHtml(__($block->getData('title'))) ?></h4>
+
+    <template x-if="nbHits">
+        <div class="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <template x-for="hit in hits">
+                <?= $block->getChildHtml('hit') ?>
+            </template>
+        </div>
+    </template>
+</div>

@@ -1,0 +1,127 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @see https://www.algolia.com/doc/api-client/methods/recommend/?client=javascript
+ * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/?client=javascript
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ *
+ */
+
+declare(strict_types=1);
+
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ProductRecommendationsViewModel $relatedProducts */
+$relatedProducts = $block->getData('relatedProductsViewModel');
+
+if (!$relatedProducts->isEnabled()) {
+    return;
+}
+?>
+
+<script>
+    /**
+     * @typedef {Object} hit The product
+     *
+     * @property {string} name Product's name
+     * @property {string} sku Product's SKU
+     * @property {string} image_url Product's main image
+     * @property {string} thumbnail_url Product's thumbnail image
+     * @property ... any other product attribute passed to Algolia
+     */
+
+    /**
+     * @typedef AlgoliaRecommendClient
+     * @property {Function} getRecommendations
+     * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/#parameters
+     */
+
+    function algoliaRecommendationsFor<?= $escaper->escapeHtmlAttr($relatedProducts->getProductId()) ?>() {
+        function loadScript (url) {
+            let script = document.createElement('script');
+            script.setAttribute('type', 'text/javascript');
+            script.setAttribute('src', url);
+            script.setAttribute('id', 'algolia-recommend');
+            document.head.append(script);
+
+            return new Promise((resolve) => script.addEventListener('load', resolve));
+        }
+
+        return {
+            nbHits: 0,
+            hits: [],
+            initialized: false,
+            algoliaRecommendClient: null,
+            additionalApiParams: {},
+
+            init() {
+                this.loadScripts();
+            },
+
+            /**
+             * Loading on the page the Algolia recommend javascript
+             */
+            loadScripts() {
+                if (this.initialized) {
+                    return;
+                }
+
+                if (document.getElementById('algolia-recommend')) {
+                    this.fetchProducts();
+                } else {
+                    loadScript('https://cdn.jsdelivr.net/npm/@algolia/recommend').then(() => {
+                        this.algoliaRecommendClient = window['@algolia/recommend'](
+                            '<?= $escaper->escapeJs($relatedProducts->getApplicationId()) ?>',
+                            '<?= $escaper->escapeJs($relatedProducts->getSearchOnlyAPIKey()) ?>'
+                        );
+
+                        this.fetchProducts();
+                    });
+                }
+
+                this.initialized = true;
+            },
+
+            /**
+             * Does a request to Algolia's API to fetch the products
+             */
+            fetchProducts() {
+                this.algoliaRecommendClient.getRecommendations([
+                    Object.assign({
+                            indexName: '<?= $escaper->escapeJs($relatedProducts->getIndexName()) ?>',
+                            objectID: '<?= $escaper->escapeJs($relatedProducts->getProductId()) ?>',
+                            model: '<?= $escaper->escapeJs($block->getData('recommendationModel')) ?>',
+                            maxRecommendations: <?= $escaper->escapeJs((int)$block->getData('productLimit')) ?>
+                        },
+                        this.additionalApiParams
+                    )
+                ])
+                .then(({ results }) => {
+                    const data = results[0] || null;
+
+                    if (!data) {
+                        return;
+                    }
+
+                    this.nbHits = data.nbHits;
+                    this.hits = data.hits;
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+            }
+        }
+    }
+</script>

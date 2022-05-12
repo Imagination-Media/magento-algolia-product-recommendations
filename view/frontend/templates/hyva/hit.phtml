@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ */
+
+?>
+
+<div>
+    <div class="mb-2">
+        <img :src="hit.thumbnail_url" :alt="hit.name"/>
+    </div>
+    <p x-text="hit.name"></p>
+</div>
