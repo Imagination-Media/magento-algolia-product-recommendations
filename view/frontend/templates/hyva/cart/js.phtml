@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @see https://www.algolia.com/doc/api-client/methods/recommend/?client=javascript
+ * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/?client=javascript
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ *
+ */
+
+declare(strict_types=1);
+
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+$uniqueId = $block->getData('uniqueId');
+?>
+
+<script>
+    function algoliaRecommendationsFor<?= $escaper->escapeJs($uniqueId) ?>() {
+        return {
+            cartItemsProductIds: [],
+            fetchProductsInitially: false,
+
+            /**
+             * Does a request to Algolia's API to fetch the products.
+             *
+             * For the cart page we have to do an API request for each cart item separately because of the Algolia API
+             * limitation: when requesting recommendation for multiple `objectID`s and at least one of those doesn't
+             * have recommendation, the whole API request fails because an error is thrown.
+             * Thus, as a workaround to collect the recommended products for those cart items that Algolia API returns
+             * data, we have to iterate separately each item.
+             */
+            fetchProducts() {
+                const apiResults = this.getRecommendationRequests().map(request => {
+                    return this.algoliaRecommendClient.getRecommendations([request])
+                        .then(({results}) => {
+                            return results[0] && results[0]['hits'] ? results[0]['hits'] : []
+                        })
+                        .catch(function(err) {
+                            console.error(`ObjectID ${request.objectID} does not exist in the recommendation model.`);
+                            console.error(err);
+
+                            return [];
+                        });
+                });
+
+                Promise.all(apiResults).then((results) => {
+                    let hits = Array.prototype.concat.apply([], results)
+
+                    this.saveApiResponseData(this.sanitizeHits(hits));
+                });
+            },
+
+            getRecommendationRequests() {
+                return this.cartItemsProductIds.map(productId => (
+                     {
+                         indexName: this.indexName,
+                         objectID: productId,
+                         model: this.recommendationsModel,
+                         maxRecommendations: this.recommendationsLimit
+                     }
+                ));
+            },
+
+            saveApiResponseData(results) {
+                this.nbHits = results.length;
+                this.hits = results;
+            },
+
+            fireFetchEvent() {
+                window.dispatchEvent(new CustomEvent('algolia-fetch-cart-recommendations'));
+            },
+
+            /**
+             * Filter the given array of this before showing to customers
+             *
+             * @param {Array} hits
+             * @returns {Array}
+             */
+            sanitizeHits(hits) {
+                let filteredHits = [];
+
+                // remove products that are already in the cart and duplicates.
+                // duplicates can be encountered because we send separate API
+                // requests for each cart item.
+                hits.forEach((hit) => {
+                    if (
+                        this.cartItemsProductIds.indexOf(hit.objectID) === -1 &&
+                        !!filteredHits.findIndex((el) => hit.objectID === el.objectID)
+                    ) {
+                        filteredHits.push(hit);
+                    }
+                });
+
+                // sort hits descending by Algolia's recommend score
+                filteredHits.sort((a, b) => {
+                    if(a._score > b._score) return -1;
+                    if(a._score < b._score) return 1;
+
+                    return 0;
+                });
+
+                return filteredHits.slice(0, this.recommendationsLimit);
+            },
+
+            eventListeners: {
+                ['@private-content-loaded.window'](event) {
+                    const data = event.detail.data,
+                        cartItems = data.cart.items;
+
+                    /**
+                     * When there are no products in the cart
+                     * we need to reset the previously saved
+                     * recommended products
+                     */
+                    if (!cartItems.length) {
+                        this.cartItemsProductIds = [];
+                        this.nbHits = 0;
+                        this.hits = [];
+
+                        return;
+                    }
+
+                    this.cartItemsProductIds = cartItems.map(item => item.product_id);
+                    this.cartItemsProductIds.length && this.fireFetchEvent();
+                },
+                ['@algolia-fetch-cart-recommendations.window']() {
+                    this.fetchProducts();
+                }
+            }
+        }
+    }
+</script>

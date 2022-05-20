@@ -17,16 +17,16 @@
 
 declare(strict_types=1);
 
-use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 
 /** @var Template $block */
 /** @var Escaper $escaper */
-/** @var ProductRecommendationsViewModel $relatedProducts */
-$relatedProducts = $block->getData('relatedProductsViewModel');
+/** @var RecommendationsViewModel $recommendationsViewModel */
+$recommendationsViewModel = $block->getData('recommendationsViewModel');
 
-if (!$relatedProducts->isEnabled()) {
+if (!$recommendationsViewModel->isEnabled()) {
     return;
 }
 ?>
@@ -48,7 +48,7 @@ if (!$relatedProducts->isEnabled()) {
      * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/#parameters
      */
 
-    function algoliaRecommendationsFor<?= $escaper->escapeHtmlAttr($relatedProducts->getProductId()) ?>() {
+    function algoliaRecommendations() {
         function loadScript (url) {
             let script = document.createElement('script');
             script.setAttribute('type', 'text/javascript');
@@ -60,11 +60,15 @@ if (!$relatedProducts->isEnabled()) {
         }
 
         return {
+            fetchProductsInitially: true,
             nbHits: 0,
             hits: [],
             initialized: false,
             algoliaRecommendClient: null,
             additionalApiParams: {},
+            recommendationsModel: '<?= $escaper->escapeJs($block->getData('recommendationModel')) ?>',
+            recommendationsLimit: <?= $escaper->escapeJs((int)$block->getData('productLimit')) ?>,
+            indexName: '<?= $escaper->escapeJs($recommendationsViewModel->getIndexName()) ?>',
 
             init() {
                 this.loadScripts();
@@ -79,15 +83,15 @@ if (!$relatedProducts->isEnabled()) {
                 }
 
                 if (document.getElementById('algolia-recommend')) {
-                    this.fetchProducts();
+                    this.fetchProductsInitially && this.fetchProducts();
                 } else {
                     loadScript('https://cdn.jsdelivr.net/npm/@algolia/recommend').then(() => {
                         this.algoliaRecommendClient = window['@algolia/recommend'](
-                            '<?= $escaper->escapeJs($relatedProducts->getApplicationId()) ?>',
-                            '<?= $escaper->escapeJs($relatedProducts->getSearchOnlyAPIKey()) ?>'
+                            '<?= $escaper->escapeJs($recommendationsViewModel->getApplicationId()) ?>',
+                            '<?= $escaper->escapeJs($recommendationsViewModel->getSearchOnlyAPIKey()) ?>'
                         );
 
-                        this.fetchProducts();
+                        this.fetchProductsInitially && this.fetchProducts();
                     });
                 }
 
@@ -98,29 +102,47 @@ if (!$relatedProducts->isEnabled()) {
              * Does a request to Algolia's API to fetch the products
              */
             fetchProducts() {
-                this.algoliaRecommendClient.getRecommendations([
-                    Object.assign({
-                            indexName: '<?= $escaper->escapeJs($relatedProducts->getIndexName()) ?>',
-                            objectID: '<?= $escaper->escapeJs($relatedProducts->getProductId()) ?>',
-                            model: '<?= $escaper->escapeJs($block->getData('recommendationModel')) ?>',
-                            maxRecommendations: <?= $escaper->escapeJs((int)$block->getData('productLimit')) ?>
-                        },
-                        this.additionalApiParams
-                    )
-                ])
-                .then(({ results }) => {
-                    const data = results[0] || null;
+                this.algoliaRecommendClient.getRecommendations(this.getRecommendationRequests())
+                .then(({ results }) => this.saveApiResponseData(results))
+                .catch(err => console.error(err));
+            },
 
-                    if (!data) {
-                        return;
-                    }
+            getRecommendationRequests() {
+                return [];
 
-                    this.nbHits = data.nbHits;
-                    this.hits = data.hits;
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+                /**
+                 * Example of return:
+                 *
+                 * return [
+                 *     Object.assign({
+                 *             indexName: this.indexName,
+                 *             objectID: 17833,
+                 *             model: this.recommendationsModel,
+                 *             maxRecommendations: this.recommendationsLimit
+                 *         }
+                 *     )
+                 * ]
+                 */
+            },
+
+            saveApiResponseData(results) {
+                /**
+                 * Default behaviour is to save the first given result from the API.
+                 * Might change for other cases, like Shopping Cart page.
+                 */
+
+                const data = results[0] || null;
+
+                if (!data) {
+                    return;
+                }
+
+                this.nbHits = data.nbHits;
+                this.hits = data.hits;
+            },
+
+            eventListeners: {
+                // Placeholder for later usage & customisation
             }
         }
     }

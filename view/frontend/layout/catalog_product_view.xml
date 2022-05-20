@@ -18,8 +18,9 @@
             <block name="algolia.product.recommendations"
                    template="ImaginationMedia_AlgoliaProductRecommendations::related-products.phtml">
                 <arguments>
-                    <argument name="relatedProductsViewModel" xsi:type="object">
-                        ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
+                    <argument name="recommendationsViewModel" xsi:type="object">ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel
+                    </argument>
+                    <argument name="relatedProductsViewModel" xsi:type="object">ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
                     </argument>
                 </arguments>
             </block>
