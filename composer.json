@@ -1,21 +1,30 @@
 {
-  "name": "imaginationmedia/algolia-product-recommendations",
-  "version": "1.0.0",
-  "description": "Algolia product recommendations UI",
-  "type": "magento2-module",
-  "require": {
-    "magento/framework": "*",
-    "algolia/algoliasearch-magento-2": "3.2.*"
-  },
-  "license": [
-    "Proprietary"
-  ],
-  "autoload": {
-    "files": [
-      "registration.php"
+    "name": "imaginationmedia/algolia-product-recommendations",
+    "version": "1.1.0",
+    "description": "Algolia product recommendations UI",
+    "type": "magento2-module",
+    "require": {
+        "magento/framework": "*",
+        "algolia/algoliasearch-magento-2": "3.2.*"
+    },
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
     ],
-    "psr-4": {
-      "ImaginationMedia\\AlgoliaProductRecommendations\\": ""
+    "authors": [
+        {
+            "name": "Vasilii Burlacu",
+            "email": "vasilii@imaginationmedia.com",
+            "homepage": "http://www.imaginationmedia.com/",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "ImaginationMedia\\AlgoliaProductRecommendations\\": ""
+        }
     }
-  }
 }

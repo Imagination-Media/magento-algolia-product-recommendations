@@ -12,6 +12,7 @@
  */
 
 use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 
@@ -19,8 +20,10 @@ use Magento\Framework\View\Element\Template;
 /** @var Escaper $escaper */
 /** @var ProductRecommendationsViewModel $relatedProducts */
 $relatedProducts = $block->getData('relatedProductsViewModel');
+/** @var RecommendationsViewModel $recommendationsViewModel */
+$recommendationsViewModel = $block->getData('recommendationsViewModel');
 
-if (!$relatedProducts->isEnabled()) {
+if (!$recommendationsViewModel->isEnabled() || !$relatedProducts->getProductId()) {
     return;
 }
 ?>
@@ -29,15 +32,15 @@ if (!$relatedProducts->isEnabled()) {
 <script>
     const algoliarecommend = window['@algolia/recommend'];
     const client = algoliarecommend(
-        '<?= $escaper->escapeJs($relatedProducts->getApplicationId()) ?>',
-        '<?= $escaper->escapeJs($relatedProducts->getSearchOnlyAPIKey()) ?>'
+        '<?= $escaper->escapeJs($recommendationsViewModel->getApplicationId()) ?>',
+        '<?= $escaper->escapeJs($recommendationsViewModel->getSearchOnlyAPIKey()) ?>'
     );
 
     client.getRecommendations([
         {
-            indexName: '<?= $escaper->escapeJs($relatedProducts->getIndexName()) ?>',
+            indexName: '<?= $escaper->escapeJs($recommendationsViewModel->getIndexName()) ?>',
             objectID: '<?= $escaper->escapeJs($relatedProducts->getProductId()) ?>',
-            model: '<?= $escaper->escapeJs(ProductRecommendationsViewModel::MODEL) ?>',
+            model: 'related-products',
             maxRecommendations: 10
         },
     ])

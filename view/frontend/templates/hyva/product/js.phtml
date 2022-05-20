@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @see https://www.algolia.com/doc/api-client/methods/recommend/?client=javascript
+ * @see https://www.algolia.com/doc/api-reference/api-methods/get-recommendations/?client=javascript
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ *
+ */
+
+declare(strict_types=1);
+
+use ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ProductRecommendationsViewModel $viewModel */
+$viewModel = $block->getData('viewModel');
+$uniqueId = $block->getData('uniqueId');
+?>
+
+<script>
+    function algoliaRecommendationsFor<?= $escaper->escapeJs($uniqueId) ?>() {
+        return {
+            getRecommendationRequests() {
+                 return [
+                     {
+                         indexName: this.indexName,
+                         objectID: '<?= $escaper->escapeJs($viewModel->getProductId()) ?>',
+                         model: this.recommendationsModel,
+                         maxRecommendations: this.recommendationsLimit
+                     }
+                 ]
+            },
+        }
+    }
+</script>

@@ -20,19 +20,30 @@
             </action>
             <arguments>
                 <argument name="title" xsi:type="string">Products Customers Also Purchased</argument>
+                <argument name="uniqueId" xsi:type="string">pdp</argument>
             </arguments>
 
-            <block name="algolia.product.recommendations.js"
-                   as="js"
-                   template="ImaginationMedia_AlgoliaProductRecommendations::hyva/js-init.phtml">
-                <arguments>
-                    <argument name="relatedProductsViewModel" xsi:type="object">
-                        ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
-                    </argument>
-                    <argument name="recommendationModel" xsi:type="string">related-products</argument>
-                    <argument name="productLimit" xsi:type="number">10</argument>
-                </arguments>
-            </block>
+            <container name="algolia.product.recommendations.js" as="js">
+                <block name="algolia.product.recommendations.js.main"
+                       template="ImaginationMedia_AlgoliaProductRecommendations::hyva/js-init.phtml">
+                    <arguments>
+                        <argument name="recommendationsViewModel" xsi:type="object">\ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel
+                        </argument>
+                        <argument name="recommendationModel" xsi:type="string">related-products</argument>
+                        <argument name="productLimit" xsi:type="number">8</argument>
+                    </arguments>
+                </block>
+
+                <block name="algolia.product.recommendations.js.pdp"
+                       template="ImaginationMedia_AlgoliaProductRecommendations::hyva/product/js.phtml">
+                    <arguments>
+                        <argument name="viewModel" xsi:type="object">\ImaginationMedia\AlgoliaProductRecommendations\ViewModel\ProductRecommendationsViewModel
+                        </argument>
+                        <argument name="uniqueId" xsi:type="string">pdp</argument>
+                    </arguments>
+                </block>
+            </container>
+
             <block name="algolia.product.recommendations.hit"
                    as="hit"
                    template="ImaginationMedia_AlgoliaProductRecommendations::hyva/hit.phtml" />

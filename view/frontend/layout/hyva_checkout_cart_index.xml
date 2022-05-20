@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * AlgoliaProductRecommendations
+ *
+ * Algolia product recommendations UI
+ *
+ * @package ImaginationMedia\AlgoliaProductRecommendations
+ * @author Vasilii Burlacu <vasilii@imaginationmedia.com>
+ * @copyright Copyright (c) 2022 Imagination Media (https://www.imaginationmedia.com/)
+ * @license https://opensource.org/licenses/OSL-3.0.php Open Software License 3.0
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block name="algolia.cart.product.recommendations"
+                   template="ImaginationMedia_AlgoliaProductRecommendations::hyva/recommendations.phtml"
+                   after="-"
+            >
+                <arguments>
+                    <argument name="title" xsi:type="string">Products Customers Also Purchased</argument>
+                    <argument name="uniqueId" xsi:type="string">cart</argument>
+                    <argument name="recommendationsViewModel"
+                              xsi:type="object">ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel
+                    </argument>
+                </arguments>
+
+                <container name="algolia.product.recommendations.js" as="js">
+                    <block name="algolia.product.recommendations.js.main"
+                           template="ImaginationMedia_AlgoliaProductRecommendations::hyva/js-init.phtml">
+                        <arguments>
+                            <argument name="recommendationsViewModel"
+                                      xsi:type="object">\ImaginationMedia\AlgoliaProductRecommendations\ViewModel\RecommendationsViewModel
+                            </argument>
+                            <argument name="recommendationModel" xsi:type="string">bought-together</argument>
+                            <argument name="productLimit" xsi:type="number">5</argument>
+                        </arguments>
+                    </block>
+
+                    <block name="algolia.product.recommendations.js.cart"
+                           template="ImaginationMedia_AlgoliaProductRecommendations::hyva/cart/js.phtml">
+                        <arguments>
+                            <argument name="uniqueId" xsi:type="string">cart</argument>
+                        </arguments>
+                    </block>
+                </container>
+
+                <block name="algolia.cart.product.recommendations.hit"
+                       as="hit"
+                       template="ImaginationMedia_AlgoliaProductRecommendations::hyva/hit.phtml" />
+            </block>
+        </referenceContainer>
+    </body>
+</page>
