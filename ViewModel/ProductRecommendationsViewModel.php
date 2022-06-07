@@ -35,15 +35,13 @@ class ProductRecommendationsViewModel implements ArgumentInterface
         $this->registry = $registry;
     }
 
-    public function getProductId(): ?int
+    public function getProductId(): int
     {
-        /** @var Product|null $product */
-        $product = $this->registry->registry('current_product') ?: null;
+        return $this->getProduct()->getId();
+    }
 
-        if (!$product) {
-            return null;
-        }
-
-        return (int) $product->getId();
+    private function getProduct(): Product
+    {
+        return $this->registry->registry('current_product');
     }
 }
